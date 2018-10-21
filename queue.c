@@ -39,22 +39,19 @@ queue_t *q_new()
 void q_free(queue_t *q)
 {
     /* How about freeing the list elements and the strings? */
-  list_ele_t *to_be_removed, *cur;
-
+  list_ele_t *to_be_freed, *cur;
   if(q==NULL)
     return;
-  
   cur = q->head;
-
   while(cur) {
       /* free the string associated */
     free(cur->value);
       /* save the head so we can advance it */
-    to_be_removed = cur;
+    to_be_freed = cur;
       /* advance the head */
     cur = cur->next;
       /* free the old head now that we have advanced the head */
-    free(to_be_removed);
+    free(to_be_freed);
   }
     
   /* Free queue structure */
@@ -72,33 +69,29 @@ bool q_insert_head(queue_t *q, char *s)
 {
     list_ele_t *newh;
     int lengthOfs = strlen(s)+1;
-    //int i;
     
-    /* What should you do if the q is NULL? */
     if (!q)
       return false;
-    
     newh = malloc(sizeof(list_ele_t));
-
     if(!newh)
       return false;
-
-    /* Don't forget to allocate space for the string and copy it */
-
     newh->value=malloc(lengthOfs*sizeof(char));
-    /* What if either call to malloc returns NULL? */
-
     if(!newh->value)
     {
       free(newh);
       return false;
     }
 
+    /* is strcpy unsafe here? we have already allocated all the space so can't have buffer overflow */
     strcpy(newh->value,s);
     
+    /* add it to the front of the queue */
     newh->next = q->head;
+    /* update the head ptr of the queue */
     q->head = newh;
+    
     q->len++;
+    /* if this is the first element we need to point the tail to this element */
     if(q->tail == NULL)
         q->tail=newh;
     
@@ -115,41 +108,36 @@ bool q_insert_head(queue_t *q, char *s)
  */
 bool q_insert_tail(queue_t *q, char *s)
 {
-    /* You need to write the complete code for this function */
-//  list_ele_t *last;
+
   list_ele_t *newh;
   int lengthOfs = strlen(s)+1;
-  //int i;
-
   if (!q)
     return false;
-
   if((newh=malloc(sizeof(list_ele_t)))==NULL)
     return false;
-
   newh->value=malloc(lengthOfs*sizeof(char));
-  /* What if either call to malloc returns NULL? */
-
   if(!newh->value)
     {
       free(newh);
       return false;
     }
-
-  //  for(i=0;i<lengthOfs;i++)
-  //  newh->value[i]=s[i];
-
-  // newh->value[lengthOfs]='\0';
-
-  strcpy(newh->value, s);
     
-    q->tail->next = newh;
-    q->tail = newh;
-    newh->next = NULL;
-    q->len++;
+    /* is strcpy unsafe here? we have already allocated all the space so can't have buffer overflow */
+  strcpy(newh->value, s);
 
-  /* Remember: It should operate in O(1) time */
-
+    /* does the queue already have some elements? */
+    if(q->tail) {
+        q->tail->next = newh;
+        q->tail = newh;
+        newh->next = NULL;
+        q->len++;
+    }
+    /* if we are adding to the tail of an empty queue */
+    else {
+        q->head = newh;
+        q->tail = newh;
+        q->len++;
+    }
   return true;
 }
 
