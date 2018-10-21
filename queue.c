@@ -14,7 +14,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
 #include "harness.h"
 #include "queue.h"
 
@@ -31,6 +30,8 @@ queue_t *q_new()
       return NULL;
     
     q->head = NULL;
+    q->tail=  NULL;
+    q->len=0;
     return q;
 }
 
@@ -38,18 +39,22 @@ queue_t *q_new()
 void q_free(queue_t *q)
 {
     /* How about freeing the list elements and the strings? */
-  list_ele_t *oldhead, *newhead;
+  list_ele_t *to_be_removed, *cur;
 
   if(q==NULL)
     return;
   
-  newhead = q->head;
+  cur = q->head;
 
-  while(newhead) {
-    free(newhead->value);
-    oldhead = newhead;
-    newhead = newhead->next;
-    free(oldhead);
+  while(cur) {
+      /* free the string associated */
+    free(cur->value);
+      /* save the head so we can advance it */
+    to_be_removed = cur;
+      /* advance the head */
+    cur = cur->next;
+      /* free the old head now that we have advanced the head */
+    free(to_be_removed);
   }
     
   /* Free queue structure */
@@ -89,16 +94,14 @@ bool q_insert_head(queue_t *q, char *s)
       return false;
     }
 
-    //    for(i=0;i<lengthOfs;i++)
-    //  newh->value[i]=s[i];
-      
-
-    //newh->value[lengthOfs]='\0';
-
     strcpy(newh->value,s);
     
     newh->next = q->head;
     q->head = newh;
+    q->len++;
+    if(q->tail == NULL)
+        q->tail=newh;
+    
     return true;
 }
 
@@ -113,7 +116,7 @@ bool q_insert_head(queue_t *q, char *s)
 bool q_insert_tail(queue_t *q, char *s)
 {
     /* You need to write the complete code for this function */
-  list_ele_t *last; 
+//  list_ele_t *last;
   list_ele_t *newh;
   int lengthOfs = strlen(s)+1;
   //int i;
@@ -139,15 +142,11 @@ bool q_insert_tail(queue_t *q, char *s)
   // newh->value[lengthOfs]='\0';
 
   strcpy(newh->value, s);
-
-  newh->next=NULL;
-  last=q->head;
-
-  while(last->next) {
-    last=last->next;
-  }
-
-  last->next=newh;
+    
+    q->tail->next = newh;
+    q->tail = newh;
+    newh->next = NULL;
+    q->len++;
 
   /* Remember: It should operate in O(1) time */
 
@@ -193,6 +192,7 @@ bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
 
   free(oldhead->value);
   free(oldhead);
+    q->len--;
   
   return true;
 }
@@ -203,23 +203,10 @@ bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
  */
 int q_size(queue_t *q)
 {
-  int len=0;
-  list_ele_t *next;
-  if(!q)
-    return 0;
-
-  if(!q->head)
-    return 0;
-
-  next=q->head;
-  while(next) {
-    len++;
-    next=next->next;
-  }
-  
-    /* You need to write the code for this function */
-    /* Remember: It should operate in O(1) time */
-    return len;
+    if(q)
+        return q->len;
+    else
+        return 0;
 }
 
 /*
@@ -231,23 +218,25 @@ int q_size(queue_t *q)
  */
 void q_reverse(queue_t *q)
 {
-  int len;
-  int i;
+    list_ele_t *start, *cur, *second, *tmp;
   
   
     /* You need to write the code for this function */
   if(!q || !q->head)
     return;
-
- 
-  len=q_size(q);
-  printf("leagth = %d\n", len);
-  for(i=0;i<len;i++)
-  {
-    q_insert_tail(q,q->head->value);
-    printf("This succeeded\n");
-    q_remove_head(q, NULL, 1);
-  }
-  
+    
+    start=q->head;
+    cur=q->head;
+    second=cur->next;
+    
+    while(second) {
+        tmp=second->next;
+        second->next=cur;
+        cur=second;
+        second=tmp;
+    }
+    q->head=cur;
+    start->next = NULL;
+    q->tail=start;
 }
 
