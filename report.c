@@ -32,9 +32,9 @@ volatile int rval = 0;
 /* Default fatal function */
 void default_fatal_fun() {
     /*
-    sprintf(fail_buf, "FATAL.  Memory: allocated = %.3f GB, resident = %.3f GB\n",
-           gigabytes(current_bytes), gigabytes(resident_bytes()));
-    */
+     sprintf(fail_buf, "FATAL.  Memory: allocated = %.3f GB, resident = %.3f GB\n",
+     gigabytes(current_bytes), gigabytes(resident_bytes()));
+     */
     rval = write(STDOUT_FILENO, fail_buf, strlen(fail_buf)+1);
     if (logfile)
         fputs(fail_buf, logfile);
@@ -59,9 +59,9 @@ void report_event(message_t msg, char *fmt, ...)
     va_list ap;
     bool fatal = msg == MSG_FATAL;
     char* msg_name = msg == MSG_WARN ? "WARNING" :
-        msg == MSG_ERROR ? "ERROR" : "FATAL ERROR";
+    msg == MSG_ERROR ? "ERROR" : "FATAL ERROR";
     int level = msg == MSG_WARN ? 2 :
-        msg == MSG_ERROR ? 1 : 0;
+    msg == MSG_ERROR ? 1 : 0;
     if (verblevel < level)
         return;
     if (!errfile)
@@ -217,15 +217,15 @@ void *calloc_or_fail(size_t cnt, size_t bytes, char *fun_name) {
     current_bytes += cnt * bytes;
     peak_bytes = MAX(peak_bytes, current_bytes);
     last_peak_bytes = MAX(last_peak_bytes, current_bytes);
-
+    
     return p;
 }
 
 /* Call realloc returns NULL & exit if fails.
-   Require explicit indication of current allocation */
+ Require explicit indication of current allocation */
 void * realloc_or_fail(void *old, size_t old_bytes, size_t new_bytes,
                        char *fun_name) {
-    if (new_bytes > old_bytes) 
+    if (new_bytes > old_bytes)
         check_exceed(new_bytes-old_bytes);
     void *p = realloc(old, new_bytes);
     if (!p) {
@@ -256,7 +256,7 @@ char *strsave_or_fail(char *s, char *fun_name) {
     current_bytes += len+1;
     peak_bytes = MAX(peak_bytes, current_bytes);
     last_peak_bytes = MAX(last_peak_bytes, current_bytes);
-
+    
     return strcpy(ss, s);
 }
 
@@ -280,7 +280,7 @@ void free_array(void *b, size_t cnt, size_t bytes) {
     free_cnt++;
     free_bytes += cnt * bytes;
     current_bytes -= cnt * bytes;
-
+    
 }
 
 /* Free string saved by strsave_or_fail */
@@ -299,7 +299,7 @@ void mem_status(FILE *fp) {
             "  Peak bytes %lu, Last peak bytes %ld, Current bytes %ld\n",
             (long unsigned) allocate_cnt, (long unsigned) allocate_bytes,
             (long unsigned) free_cnt, (long unsigned) free_bytes,
-            (long unsigned) peak_bytes, 
+            (long unsigned) peak_bytes,
             (long unsigned) last_peak_bytes,
             (long unsigned) current_bytes);
 }
